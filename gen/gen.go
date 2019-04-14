@@ -3,9 +3,11 @@ package gen
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/StevenZack/gengo/tool"
+	"github.com/StevenZack/tools/ioToolkit"
+
 	"github.com/StevenZack/tools/strToolkit"
 
 	"github.com/StevenZack/tools/fileToolkit"
@@ -13,7 +15,7 @@ import (
 
 var verbosely bool
 
-const genExecutorPkgPath = "github.com/StevenZack/gengo/genexecutor/main.go"
+const genExecutorPkgPath = "github.com/StevenZack/gengo/genexecutor"
 
 func SetVerbosely(b bool) {
 	verbosely = b
@@ -26,16 +28,16 @@ func Gen(args []string) {
 	if args == nil {
 		pkgPath, e = fileToolkit.GetCurrentPkgPath()
 		if e != nil {
-			fmt.Errorf("getCurrentPkgPath error :%v", e)
+			fmt.Printf("getCurrentPkgPath error :%v", e)
 			return
 		}
 	} else {
 		pkgPath = args[0]
 	}
-
+	log("target pkgPath =", pkgPath,"\n")
 	e = compile(pkgPath)
 	if e != nil {
-		fmt.Errorf("compile %s err:%v", pkgPath, e)
+		fmt.Printf("compile %s err:%v", pkgPath, e)
 		return
 	}
 }
@@ -46,13 +48,11 @@ func compile(pkgPath string) error {
 		return errors.New("path:" + pkgPath + " not exists")
 	}
 
-	if !fileToolkit.IsDirExists(absPath + "_gengo") {
-		return nil
+	list, e := fileToolkit.RangeFilesInDir(absPath)
+	if e != nil {
+		return e
 	}
 
-	log(pkgPath)
-
-	list := fileToolkit.GetAllFilesFromFolder(absPath)
 	for _, filePath := range list {
 		if !strToolkit.EndsWith(filePath, ".go") {
 			continue
@@ -60,13 +60,28 @@ func compile(pkgPath string) error {
 		if strToolkit.EndsWith(filePath, "_gengo.go") {
 			continue
 		}
-		structs, e := tool.ParseFileGengoStructs(filePath)
+		structs, e := ParseFileGengoStructs(filePath)
 		if e != nil {
-			return e
+			return errors.New(filePath + " parseFileGengoStructs failed:" + e.Error())
 		}
 
+		log("Found", len(structs), "structs",structs)
+
 		for _, obj := range structs {
-			generateExecutor(obj)
+			e := generateExecutor(obj)
+			if e != nil {
+				return errors.New(filePath + " gen executor failed:" + e.Error())
+			}
+
+			outputFile, e := obj.GetGengoFileOutputPath()
+			log("output:",outputFile)
+			if e != nil {
+				return e
+			}
+			e = ioToolkit.RunAttachedCmd("genexecutor", outputFile, obj.GengoTag)
+			if e != nil {
+				return errors.New(filePath + " " + e.Error() + " . Did you forget to add GOPATH/bin to $PATH environment variable ?")
+			}
 		}
 	}
 	return nil
@@ -78,8 +93,8 @@ func log(args ...interface{}) {
 	}
 }
 
-func generateExecutor(obj tool.GengoStruct) error {
-	path := fileToolkit.GetGOPATH() + "src/" + genExecutorPkgPath
+func generateExecutor(obj GengoStruct) error {
+	path := fileToolkit.GetGOPATH() + "src/" + genExecutorPkgPath + "/main.go"
 	bakPath := path + ".bak"
 	if !fileToolkit.IsFileExists(bakPath) {
 		return errors.New("file " + bakPath + " doesn't exists")
@@ -88,7 +103,22 @@ func generateExecutor(obj tool.GengoStruct) error {
 	if e != nil {
 		return e
 	}
+	str = strings.Replace(str, "str := data_gengo.Gen(g, genGoTag, t)", "str := "+obj.PreCompilerPkgName+".Gen(g, genGoTag, t)", -1)
+	str = strings.Replace(str, `"github.com/StevenZack/gengo/example/data"`, `"`+obj.StructPkg+`"`, -1)
+	structPkgName, e := fileToolkit.GetPkgNameFromPkg(obj.StructPkg)
+	if e != nil {
+		return e
+	}
+	str = strings.Replace(str, "s := data.Student{}", "s := "+structPkgName+"."+obj.Name+"{}", -1)
+	str = strings.Replace(str, `packageName := "data"`, `packageName := "`+structPkgName+`"`, -1)
 	str = strings.Replace(str, "github.com/StevenZack/gengo/example/data_gengo", obj.PreCompilerPkg, -1)
-	str = strings.Replace(str, "str := data_gengo.Gen(g, t)", "str := "+obj.PreCompilerPkgName+".Gen(g, t)", -1)
-	
+
+	fo, e := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if e != nil {
+		return e
+	}
+	defer fo.Close()
+	fo.WriteString(str)
+
+	return ioToolkit.RunAttachedCmd("go", "install", genExecutorPkgPath)
 }

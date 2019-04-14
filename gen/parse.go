@@ -1,4 +1,4 @@
-package tool
+package gen
 
 import (
 	"bufio"
@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/StevenZack/tools/fileToolkit"
 	"github.com/StevenZack/tools/strToolkit"
 )
 
@@ -16,6 +17,7 @@ type GengoStruct struct {
 	PreCompilerPkgName string
 
 	StructPkg string
+	FilePath  string
 	GengoTag  string
 	Name      string
 	Fields    []Field
@@ -26,7 +28,21 @@ type Field struct {
 	Tag  reflect.StructTag
 }
 
+func (g *GengoStruct) GetGengoFileOutputPath() (string, error) {
+	name, e := fileToolkit.GetNameOfPath(g.FilePath)
+	if e != nil {
+		return "", e
+	}
+	dir,e:=fileToolkit.GetDirOfFile(g.FilePath)
+	if e!=nil{
+		return "",e
+	}
+	nameWithoutGo := name[:len(name)-len(".go")]
+	return strToolkit.Getrpath(dir)+nameWithoutGo + "_gengo.go", nil
+}
+
 func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
+	log("parsing", path)
 	f, e := os.OpenFile(path, os.O_RDONLY, 0644)
 	if e != nil {
 		return nil, e
@@ -36,11 +52,18 @@ func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
 
 	structs := []GengoStruct{}
 	index := 0
-
+	dir,e:=fileToolkit.GetDirOfFile(path)
+	if e != nil {
+		return nil,e
+	}
+	structPkg, e := fileToolkit.GetPkgFromDir(dir)
+	if e != nil {
+		return nil, e
+	}
 FileLoop:
 	for {
 		index++
-		line, e := ReadLine(r)
+		line, e := fileToolkit.ReadLine(r)
 		if e != nil {
 			break FileLoop
 		}
@@ -55,15 +78,17 @@ FileLoop:
 		gs := GengoStruct{}
 		gs.PreCompilerPkg = precompiler
 		gs.GengoTag = gengoTag
-		gs.PreCompilerPkgName, e = GetPkgNameFromPkg(gs.PreCompilerPkg)
+		gs.PreCompilerPkgName, e = fileToolkit.GetPkgNameFromPkg(gs.PreCompilerPkg)
 		if e != nil {
 			return nil, e
 		}
+		gs.StructPkg = structPkg
+		gs.FilePath = path
 
 	GengoLoop:
 		for {
 			index++
-			gengoLine, e := ReadLine(r)
+			gengoLine, e := fileToolkit.ReadLine(r)
 			if e != nil {
 				break FileLoop
 			}
@@ -82,7 +107,7 @@ FileLoop:
 			//StructLoop:
 			for {
 				index++
-				structline, e := ReadLine(r)
+				structline, e := fileToolkit.ReadLine(r)
 				if e != nil {
 					break FileLoop
 				}
@@ -124,7 +149,7 @@ func readGengoFromLine(l string) (string, string, error) {
 		gengoTag = strs[1]
 	}
 
-	if !IsGoPkg(precompiler) {
+	if !fileToolkit.IsGoPkg(precompiler) {
 		return "", "", errors.New("pkg:" + precompiler + " is not a Go Package")
 	}
 
