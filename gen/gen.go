@@ -23,21 +23,21 @@ func Gen(args []string) {
 	if args == nil {
 		pkgPath, e = fileToolkit.GetCurrentPkgPath()
 		if e != nil {
-			fmt.Println(`GetCurrentPkgPath error :`, e)
+			fmt.Errorf("getCurrentPkgPath error :%v", e)
 			return
 		}
 	} else {
 		pkgPath = args[0]
 	}
 
-	e = execute(pkgPath)
+	e = compile(pkgPath)
 	if e != nil {
-		fmt.Println(`execute error :`, e)
+		fmt.Errorf("compile %s err:%v", pkgPath, e)
 		return
 	}
 }
 
-func execute(pkgPath string) error {
+func compile(pkgPath string) error {
 	absPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getunpath(pkgPath)
 	if !fileToolkit.IsDirExists(absPath) {
 		return errors.New("path:" + pkgPath + " not exists")
@@ -57,7 +57,11 @@ func execute(pkgPath string) error {
 		if strToolkit.EndsWith(filePath, "_gengo.go") {
 			continue
 		}
-		e := tool.ParseFile(filePath)
+		structs, e := tool.ParseFileGengoStructs(filePath)
+		if e != nil {
+			return e
+		}
+		
 	}
 	return nil
 }

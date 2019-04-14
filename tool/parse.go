@@ -13,6 +13,7 @@ import (
 
 type GengoStruct struct {
 	PreCompilerPkg string
+	GengoTag       string
 	Name           string
 	Fields         []Field
 }
@@ -43,14 +44,14 @@ FileLoop:
 		if !strings.Contains(line, "gengo ") {
 			continue
 		}
-		strs := strings.Split(line, "gengo ")
-		preCompilerPkg := strs[len(strs)-1]
-		if !IsGoPkg(preCompilerPkg) {
-			continue
+		precompiler, gengoTag, e := readGengoFromLine(line)
+		if e != nil {
+			return nil, e
 		}
 
 		gs := GengoStruct{}
-		gs.PreCompilerPkg = preCompilerPkg
+		gs.PreCompilerPkg = precompiler
+		gs.GengoTag = gengoTag
 
 	GengoLoop:
 		for {
@@ -93,6 +94,34 @@ FileLoop:
 	}
 
 	return structs, nil
+}
+
+func readGengoFromLine(l string) (string, string, error) {
+	formatErr := errors.New("bad gengo format")
+	if !strToolkit.StartsWith(l, "//") {
+		return "", "", formatErr
+	}
+
+	index := strings.Index(l, "gengo ")
+	if index < 2 {
+		return "", "", formatErr
+	}
+
+	strs := strings.Split(l[index+len("gengo "):], " ")
+	if len(strs) == 0 {
+		return "", "", formatErr
+	}
+	var precompiler, gengoTag string
+	precompiler = strs[0]
+	if len(strs) > 1 {
+		gengoTag = strs[1]
+	}
+
+	if !IsGoPkg(precompiler) {
+		return "", "", errors.New("pkg:" + precompiler + " is not a Go Package")
+	}
+
+	return precompiler, gengoTag, nil
 }
 
 func readStructNameFromLine(l string) (string, error) {
