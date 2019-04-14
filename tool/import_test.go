@@ -3,5 +3,5 @@ package tool
 import "testing"
 
 func Test_getImportFromL(t *testing.T) {
-	t.Log(getImportFromL(`qwe "github.com/stevenzack/qwe"`))
+	t.Log(GetAllImports("/Users/stevenzacker/go/src/github.com/StevenZack/gengo/tool/import.go"))
 }

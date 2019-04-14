@@ -12,7 +12,7 @@ import (
 func GetAllImports(path string) ([]string, error) {
 	imports := []string{}
 
-	f, e := os.OpenFile(path, os.O_RDONLY, 0644)
+	f, e := os.Open(path)
 	if e != nil {
 		return nil, e
 	}
@@ -22,9 +22,8 @@ func GetAllImports(path string) ([]string, error) {
 	for {
 		line, e := readLine(r)
 		if e != nil {
-			return nil, e
+			break
 		}
-
 		if !strToolkit.StartsWith(line, "import") {
 			continue
 		}
@@ -38,9 +37,20 @@ func GetAllImports(path string) ([]string, error) {
 				if strings.Contains(l, ")") {
 					break
 				}
-
+				imp, e := getImportFromL(l)
+				if e != nil {
+					continue
+				}
+				imports = append(imports, imp)
 			}
+			continue
 		}
+
+		imp, e := getImportFromL(line)
+		if e != nil {
+			continue
+		}
+		imports = append(imports, imp)
 	}
 
 	return imports, nil
@@ -57,6 +67,7 @@ func readLine(r *bufio.Reader) (string, error) {
 func getImportFromL(l string) (string, error) {
 	list := strings.Split(l, " ")
 	for _, str := range list {
+		str = strings.Replace(str, "\t", "", -1)
 		count := strings.Count(str, `"`)
 		if count != 2 {
 			continue
