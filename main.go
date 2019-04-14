@@ -1,25 +1,31 @@
 package main
 
 import (
-	"os"
+	"flag"
 
 	"github.com/StevenZack/gengo/gen"
 
 	"github.com/StevenZack/gengo/help"
 )
 
+var verbose = flag.Bool("v", false, "show log")
+
 func main() {
-	if len(os.Args) < 2 {
+	flag.Parse()
+	gen.SetVerbosely(*verbose)
+
+	if len(flag.Args()) < 1 {
 		help.ShowAll()
 		return
 	}
-	action := os.Args[1]
+
+	action := flag.Arg(0)
 
 	var args []string
-	if len(os.Args) == 2 {
+	if len(flag.Args()) == 1 {
 		args = nil
 	} else {
-		args = os.Args[2:]
+		args = flag.Args()[1:]
 	}
 
 	switch action {

@@ -1,12 +1,19 @@
 package gen
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/StevenZack/tools/strToolkit"
 
 	"github.com/StevenZack/tools/fileToolkit"
 )
+
+var verbosely bool
+
+func SetVerbosely(b bool) {
+	verbosely = b
+}
 
 func Gen(args []string) {
 	var pkgPath string
@@ -28,11 +35,25 @@ func Gen(args []string) {
 		return
 	}
 }
+
 func execute(pkgPath string) error {
-	gengoPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getrpath(pkgPath)
-	if !fileToolkit.IsDirExists(gengoPath) {
+	absPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getunpath(pkgPath)
+	if !fileToolkit.IsDirExists(absPath) {
+		return errors.New("path:" + pkgPath + " not exists")
+	}
+
+	if !fileToolkit.IsDirExists(absPath + "_gengo") {
 		return nil
 	}
-	fmt.Println("execute:", gengoPath)
+
+	log(pkgPath)
+
+	
 	return nil
+}
+
+func log(args ...interface{}) {
+	if verbosely {
+		fmt.Println(args...)
+	}
 }
