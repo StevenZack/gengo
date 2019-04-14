@@ -7,7 +7,7 @@ import (
 	"github.com/StevenZack/gengo/gen"
 )
 
-func Gen(g *gen.FileGenerator, t reflect.Type) string {
+func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 
 	g.AddImport("fmt")
 

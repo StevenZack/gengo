@@ -56,14 +56,6 @@ func GetAllImports(path string) ([]string, error) {
 	return imports, nil
 }
 
-func ReadLine(r *bufio.Reader) (string, error) {
-	b, _, e := r.ReadLine()
-	if e != nil {
-		return "", e
-	}
-	return string(b), nil
-}
-
 func getImportFromL(l string) (string, error) {
 	list := strings.Split(l, " ")
 	for _, str := range list {

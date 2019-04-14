@@ -3,6 +3,7 @@ package gen
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/StevenZack/gengo/tool"
 	"github.com/StevenZack/tools/strToolkit"
@@ -11,6 +12,8 @@ import (
 )
 
 var verbosely bool
+
+const genExecutorPkgPath = "github.com/StevenZack/gengo/genexecutor/main.go"
 
 func SetVerbosely(b bool) {
 	verbosely = b
@@ -61,7 +64,10 @@ func compile(pkgPath string) error {
 		if e != nil {
 			return e
 		}
-		
+
+		for _, obj := range structs {
+			generateExecutor(obj)
+		}
 	}
 	return nil
 }
@@ -70,4 +76,19 @@ func log(args ...interface{}) {
 	if verbosely {
 		fmt.Println(args...)
 	}
+}
+
+func generateExecutor(obj tool.GengoStruct) error {
+	path := fileToolkit.GetGOPATH() + "src/" + genExecutorPkgPath
+	bakPath := path + ".bak"
+	if !fileToolkit.IsFileExists(bakPath) {
+		return errors.New("file " + bakPath + " doesn't exists")
+	}
+	str, e := fileToolkit.ReadFileAll(bakPath)
+	if e != nil {
+		return e
+	}
+	str = strings.Replace(str, "github.com/StevenZack/gengo/example/data_gengo", obj.PreCompilerPkg, -1)
+	str = strings.Replace(str, "str := data_gengo.Gen(g, t)", "str := "+obj.PreCompilerPkgName+".Gen(g, t)", -1)
+	
 }

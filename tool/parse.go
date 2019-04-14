@@ -12,10 +12,13 @@ import (
 )
 
 type GengoStruct struct {
-	PreCompilerPkg string
-	GengoTag       string
-	Name           string
-	Fields         []Field
+	PreCompilerPkg     string
+	PreCompilerPkgName string
+
+	StructPkg string
+	GengoTag  string
+	Name      string
+	Fields    []Field
 }
 type Field struct {
 	Name string
@@ -52,6 +55,10 @@ FileLoop:
 		gs := GengoStruct{}
 		gs.PreCompilerPkg = precompiler
 		gs.GengoTag = gengoTag
+		gs.PreCompilerPkgName, e = GetPkgNameFromPkg(gs.PreCompilerPkg)
+		if e != nil {
+			return nil, e
+		}
 
 	GengoLoop:
 		for {
