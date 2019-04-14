@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/StevenZack/gengo/tool"
 	"github.com/StevenZack/tools/strToolkit"
 
 	"github.com/StevenZack/tools/fileToolkit"
@@ -48,7 +49,16 @@ func execute(pkgPath string) error {
 
 	log(pkgPath)
 
-	
+	list := fileToolkit.GetAllFilesFromFolder(absPath)
+	for _, filePath := range list {
+		if !strToolkit.EndsWith(filePath, ".go") {
+			continue
+		}
+		if strToolkit.EndsWith(filePath, "_gengo.go") {
+			continue
+		}
+		e := tool.ParseFile(filePath)
+	}
 	return nil
 }
 
