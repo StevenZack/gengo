@@ -20,7 +20,7 @@ func GetAllImports(path string) ([]string, error) {
 
 	r := bufio.NewReader(f)
 	for {
-		line, e := readLine(r)
+		line, e := ReadLine(r)
 		if e != nil {
 			break
 		}
@@ -30,7 +30,7 @@ func GetAllImports(path string) ([]string, error) {
 
 		if strings.Contains(line, "(") {
 			for {
-				l, e := readLine(r)
+				l, e := ReadLine(r)
 				if e != nil {
 					return nil, e
 				}
@@ -56,7 +56,7 @@ func GetAllImports(path string) ([]string, error) {
 	return imports, nil
 }
 
-func readLine(r *bufio.Reader) (string, error) {
+func ReadLine(r *bufio.Reader) (string, error) {
 	b, _, e := r.ReadLine()
 	if e != nil {
 		return "", e
@@ -82,4 +82,3 @@ func getImportFromL(l string) (string, error) {
 	}
 	return "", errors.New("not found")
 }
-
