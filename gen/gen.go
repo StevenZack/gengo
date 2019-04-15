@@ -12,10 +12,12 @@ var verbosely bool
 
 const genExecutorPkgPath = "github.com/StevenZack/gengo/genexecutor"
 
+// SetVerbosely set verbosely
 func SetVerbosely(b bool) {
 	verbosely = b
 }
 
+// Gen implements the gengo-gen action
 func Gen(args []string) {
 	var pkgPath string
 	var e error
@@ -44,6 +46,7 @@ func Gen(args []string) {
 	}
 }
 
+// log print logs if variable verbosely is true
 func log(args ...interface{}) {
 	if verbosely {
 		fmt.Println(args...)

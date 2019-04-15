@@ -8,6 +8,7 @@ type FileGenerator struct {
 	imports map[string]bool
 }
 
+// AddImport adds import s into output go file
 func (f *FileGenerator) AddImport(s string) {
 	if f.imports == nil {
 		f.imports = make(map[string]bool)
@@ -21,6 +22,7 @@ func (f *FileGenerator) AddImport(s string) {
 	return
 }
 
+// RemoveImport removes import s if exists
 func (f *FileGenerator) RemoveImport(s string) {
 	if f.imports == nil {
 		return
@@ -32,11 +34,12 @@ func (f *FileGenerator) RemoveImport(s string) {
 	delete(f.imports, s)
 }
 
+// WriteAllImports write all import-operation you did into output go file
 func (f *FileGenerator) WriteAllImports() error {
 	if f.imports == nil {
 		return nil
 	}
-	for key, _ := range f.imports {
+	for key := range f.imports {
 		_, e := f.Writer.WriteString("import \"" + key + "\"\n")
 		if e != nil {
 			return e

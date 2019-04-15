@@ -12,6 +12,7 @@ import (
 	"github.com/StevenZack/tools/strToolkit"
 )
 
+// ParseFileGengoStructs ParseFileGengoStructs
 func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
 	log("parsing", path)
 	f, e := os.OpenFile(path, os.O_RDONLY, 0644)
