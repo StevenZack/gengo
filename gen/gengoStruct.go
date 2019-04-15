@@ -11,13 +11,18 @@ import (
 
 // GengoStruct infers structs in target .go file
 type GengoStruct struct {
-	PreCompilerPkg     string
-	PreCompilerPkgName string
+	PreCompilers []PreCompiler
 
 	StructPkg string
 	FilePath  string
-	GengoTag  string
+	GengoTags  []string
 	Name      string
+}
+
+// PreCompiler infers a preCompiler
+type PreCompiler struct {
+	Pkg     string
+	PkgName string
 }
 
 // Field infers GengoStruct's field
@@ -38,10 +43,10 @@ func (g *GengoStruct) GetInfoStr() string {
 }
 
 // GetGengoFileOutputPath generate output file path
-func (g *GengoStruct) GetGengoFileOutputPath() (string, error) {
+func (g *GengoStruct) GetGengoFileOutputPath(precompilerIndex int) (string, error) {
 	dir, e := fileToolkit.GetDirOfFile(g.FilePath)
 	if e != nil {
 		return "", e
 	}
-	return strToolkit.Getrpath(dir) + strings.ToLower(g.Name) + "_" + g.PreCompilerPkgName + ".go", nil
+	return strToolkit.Getrpath(dir) + strings.ToLower(g.Name) + "_" + g.PreCompilers[precompilerIndex].PkgName + ".go", nil
 }

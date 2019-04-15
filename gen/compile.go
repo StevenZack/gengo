@@ -50,26 +50,32 @@ func compile(pkgPath string) error {
 		}
 
 		for _, obj := range structs {
-			outputFile, e := obj.GetGengoFileOutputPath()
 			log("\t\t", obj.GetInfoStr())
-			if e != nil {
-				return e
-			}
+			for preIndex := range obj.PreCompilers {
+				outputFile, e := obj.GetGengoFileOutputPath(preIndex)
+				if e != nil {
+					return e
+				}
 
-			e = os.Remove(outputFile)
-			if e != nil {
-				log("\t\tos.Remove file failed:", outputFile)
-			}
+				e = os.Remove(outputFile)
+				if e != nil {
+					log("\t\tos.Remove file failed:", outputFile)
+				}
 
-			e = generateExecutor(obj)
-			if e != nil {
-				return errors.New(filePath + " gen executor failed:" + e.Error())
-			}
+				e = generateExecutor(obj, preIndex)
+				if e != nil {
+					return errors.New(filePath + " gen executor failed:" + e.Error())
+				}
 
-			// run : genexecutor
-			e = ioToolkit.RunAttachedCmd("genexecutor", outputFile, obj.GengoTag)
-			if e != nil {
-				return errors.New(filePath + " " + e.Error() + " . Did you forget to add GOPATH/bin to $PATH environment variable ?")
+				gengoTag := ""
+				if len(obj.GengoTags) > preIndex {
+					gengoTag = obj.GengoTags[preIndex]
+				}
+				// run : genexecutor
+				e = ioToolkit.RunAttachedCmd("genexecutor", outputFile, gengoTag)
+				if e != nil {
+					return errors.New(filePath + " " + e.Error() + " . Did you forget to add GOPATH/bin to $PATH environment variable ?")
+				}
 			}
 		}
 	}
