@@ -3,6 +3,9 @@ package gen
 import (
 	"encoding/json"
 	"reflect"
+
+	"github.com/StevenZack/tools/fileToolkit"
+	"github.com/StevenZack/tools/strToolkit"
 )
 
 type GengoStruct struct {
@@ -27,4 +30,17 @@ func (g *GengoStruct) GetInfoStr() string {
 		str = string(b)
 	}
 	return g.Name + ":" + str
+}
+
+func (g *GengoStruct) GetGengoFileOutputPath() (string, error) {
+	name, e := fileToolkit.GetNameOfPath(g.FilePath)
+	if e != nil {
+		return "", e
+	}
+	dir, e := fileToolkit.GetDirOfFile(g.FilePath)
+	if e != nil {
+		return "", e
+	}
+	nameWithoutGo := name[:len(name)-len(".go")]
+	return strToolkit.Getrpath(dir) + nameWithoutGo + "_gengo.go", nil
 }
