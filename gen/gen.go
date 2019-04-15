@@ -67,6 +67,21 @@ func compile(pkgPath string) error {
 		if strToolkit.EndsWith(filePath, "_gengo.go") {
 			continue
 		}
+
+		allImports, e := fileToolkit.GetAllImports(filePath)
+		if e != nil {
+			return errors.New(filePath + " getAllImports failed:" + e.Error())
+		}
+		for _, imp := range allImports {
+			if !fileToolkit.IsGoPathPkg(imp) {
+				continue
+			}
+			e := compile(imp)
+			if e != nil {
+				fmt.Println("compile "+imp+" error :", e)
+			}
+		}
+
 		structs, e := ParseFileGengoStructs(filePath)
 		if e != nil {
 			return errors.New(filePath + " parseFileGengoStructs failed:" + e.Error())
@@ -75,16 +90,24 @@ func compile(pkgPath string) error {
 		log("Found", len(structs), "structs", structs)
 
 		for _, obj := range structs {
-			e := generateExecutor(obj)
-			if e != nil {
-				return errors.New(filePath + " gen executor failed:" + e.Error())
-			}
-
 			outputFile, e := obj.GetGengoFileOutputPath()
 			log("output:", outputFile)
 			if e != nil {
 				return e
 			}
+
+			e = os.Remove(outputFile)
+			if e != nil {
+				log("os.Remove file failed:", outputFile)
+			}
+			log("os.Remove succeed:", outputFile)
+
+			e = generateExecutor(obj)
+			if e != nil {
+				return errors.New(filePath + " gen executor failed:" + e.Error())
+			}
+
+			// run : genexecutor
 			e = ioToolkit.RunAttachedCmd("genexecutor", outputFile, obj.GengoTag)
 			if e != nil {
 				return errors.New(filePath + " " + e.Error() + " . Did you forget to add GOPATH/bin to $PATH environment variable ?")
@@ -108,13 +131,13 @@ func generateExecutor(obj GengoStruct) error {
 	}
 	str, e := fileToolkit.ReadFileAll(bakPath)
 	if e != nil {
-		return e
+		return errors.New("readFile." + e.Error())
 	}
 	str = strings.Replace(str, "str := data_gengo.Gen(g, genGoTag, t)", "str := "+obj.PreCompilerPkgName+".Gen(g, genGoTag, t)", -1)
 	str = strings.Replace(str, `"github.com/StevenZack/gengo/example/data"`, `"`+obj.StructPkg+`"`, -1)
 	structPkgName, e := fileToolkit.GetPkgNameFromPkg(obj.StructPkg)
 	if e != nil {
-		return e
+		return errors.New("GetPkgNameFromPkg." + e.Error())
 	}
 	str = strings.Replace(str, "s := data.Student{}", "s := "+structPkgName+"."+obj.Name+"{}", -1)
 	str = strings.Replace(str, `packageName := "data"`, `packageName := "`+structPkgName+`"`, -1)
@@ -122,7 +145,7 @@ func generateExecutor(obj GengoStruct) error {
 
 	fo, e := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if e != nil {
-		return e
+		return errors.New("os.OpenFile." + e.Error())
 	}
 	defer fo.Close()
 	fo.WriteString(str)

@@ -9,9 +9,9 @@ import (
 
 func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 
-	g.AddImport("fmt")
+	fmtAdded := false
 
-	str := `func (s *Student) ToString () string {
+	str := `func (s *` + t.Name() + `) ToString () string {
 	return `
 
 	for index := 0; index < t.NumField(); index++ {
@@ -22,6 +22,10 @@ func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 			str += "s." + field.Name + "+"
 		default:
 			str += "fmt.Sprint(s." + field.Name + ")+"
+			if !fmtAdded {
+				g.AddImport("fmt")
+				fmtAdded = true
+			}
 		}
 	}
 

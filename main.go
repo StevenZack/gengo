@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	"github.com/StevenZack/gengo/help"
+	"github.com/StevenZack/tools/ioToolkit"
 
 	"github.com/StevenZack/gengo/gen"
 )
@@ -26,11 +28,26 @@ func main() {
 	} else {
 		args = flag.Args()[1:]
 	}
-	if *verbose{
+	if *verbose {
 		fmt.Println("action =", action)
 	}
 	switch action {
 	case "gen":
 		gen.Gen(args)
+	case "install":
+		gen.Gen(args)
+		runGoCmd(action, args)
+	case "build":
+		gen.Gen(args)
+		runGoCmd(action, args)
+	default:
+		runGoCmd(action, args)
+	}
+}
+func runGoCmd(action string, args []string) {
+	e := ioToolkit.RunAttachedCmd("go", append([]string{action}, args...)...)
+	if e != nil {
+		fmt.Println("go "+action+" error :", e)
+		return
 	}
 }

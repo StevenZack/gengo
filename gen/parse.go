@@ -20,7 +20,6 @@ type GengoStruct struct {
 	FilePath  string
 	GengoTag  string
 	Name      string
-	Fields    []Field
 }
 type Field struct {
 	Name string
@@ -114,11 +113,6 @@ FileLoop:
 				if strings.Contains(structline, "}") {
 					break GengoLoop
 				}
-				fields, e := readFieldsFromLine(structline)
-				if e != nil {
-					return nil, errors.New("line " + strconv.Itoa(index) + " : " + e.Error())
-				}
-				gs.Fields = append(gs.Fields, fields...)
 			}
 		}
 
