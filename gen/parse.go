@@ -33,12 +33,12 @@ func (g *GengoStruct) GetGengoFileOutputPath() (string, error) {
 	if e != nil {
 		return "", e
 	}
-	dir,e:=fileToolkit.GetDirOfFile(g.FilePath)
-	if e!=nil{
-		return "",e
+	dir, e := fileToolkit.GetDirOfFile(g.FilePath)
+	if e != nil {
+		return "", e
 	}
 	nameWithoutGo := name[:len(name)-len(".go")]
-	return strToolkit.Getrpath(dir)+nameWithoutGo + "_gengo.go", nil
+	return strToolkit.Getrpath(dir) + nameWithoutGo + "_gengo.go", nil
 }
 
 func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
@@ -52,9 +52,9 @@ func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
 
 	structs := []GengoStruct{}
 	index := 0
-	dir,e:=fileToolkit.GetDirOfFile(path)
+	dir, e := fileToolkit.GetDirOfFile(path)
 	if e != nil {
-		return nil,e
+		return nil, e
 	}
 	structPkg, e := fileToolkit.GetPkgFromDir(dir)
 	if e != nil {
@@ -149,7 +149,7 @@ func readGengoFromLine(l string) (string, string, error) {
 		gengoTag = strs[1]
 	}
 
-	if !fileToolkit.IsGoPkg(precompiler) {
+	if !fileToolkit.IsGoPathPkg(precompiler) {
 		return "", "", errors.New("pkg:" + precompiler + " is not a Go Package")
 	}
 
