@@ -1,4 +1,4 @@
-package data_gengo
+package tostring_gengo
 
 import (
 	"reflect"
@@ -20,7 +20,7 @@ func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 		switch kind {
 		case "string":
 			str += "s." + field.Name + "+"
-		case "int":
+		default:
 			str += "fmt.Sprint(s." + field.Name + ")+"
 		}
 	}

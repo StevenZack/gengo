@@ -10,7 +10,7 @@ import (
 	"github.com/StevenZack/gengo/gen"
 
 	"github.com/StevenZack/gengo/example/data"
-	"github.com/StevenZack/gengo/example/data_gengo"
+	"github.com/StevenZack/gengo/example/precompiler/tostring_gengo"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 	if len(os.Args) > 2 {
 		genGoTag = os.Args[2]
 	}
-	str := data_gengo.Gen(g, genGoTag, t)
+	str := tostring_gengo.Gen(g, genGoTag, t)
 	fo.WriteString(str)
 
 	fo.Close()

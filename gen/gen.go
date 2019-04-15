@@ -34,7 +34,14 @@ func Gen(args []string) {
 	} else {
 		pkgPath = args[0]
 	}
-	log("target pkgPath =", pkgPath,"\n")
+	log("target pkgPath =", pkgPath, "\n")
+
+	absPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getunpath(pkgPath)
+	if !fileToolkit.IsDirExists(absPath) {
+		fmt.Println("path:" + pkgPath + " not exists")
+		return
+	}
+
 	e = compile(pkgPath)
 	if e != nil {
 		fmt.Printf("compile %s err:%v", pkgPath, e)
@@ -43,11 +50,11 @@ func Gen(args []string) {
 }
 
 func compile(pkgPath string) error {
-	absPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getunpath(pkgPath)
-	if !fileToolkit.IsDirExists(absPath) {
-		return errors.New("path:" + pkgPath + " not exists")
+	if !fileToolkit.IsGoPathPkg(pkgPath) {
+		return nil
 	}
 
+	absPath := fileToolkit.GetGOPATH() + "src/" + strToolkit.Getunpath(pkgPath)
 	list, e := fileToolkit.RangeFilesInDir(absPath)
 	if e != nil {
 		return e
@@ -65,7 +72,7 @@ func compile(pkgPath string) error {
 			return errors.New(filePath + " parseFileGengoStructs failed:" + e.Error())
 		}
 
-		log("Found", len(structs), "structs",structs)
+		log("Found", len(structs), "structs", structs)
 
 		for _, obj := range structs {
 			e := generateExecutor(obj)
@@ -74,7 +81,7 @@ func compile(pkgPath string) error {
 			}
 
 			outputFile, e := obj.GetGengoFileOutputPath()
-			log("output:",outputFile)
+			log("output:", outputFile)
 			if e != nil {
 				return e
 			}
