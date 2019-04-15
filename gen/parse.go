@@ -12,21 +12,6 @@ import (
 	"github.com/StevenZack/tools/strToolkit"
 )
 
-type GengoStruct struct {
-	PreCompilerPkg     string
-	PreCompilerPkgName string
-
-	StructPkg string
-	FilePath  string
-	GengoTag  string
-	Name      string
-}
-type Field struct {
-	Name string
-	Kind string
-	Tag  reflect.StructTag
-}
-
 func (g *GengoStruct) GetGengoFileOutputPath() (string, error) {
 	name, e := fileToolkit.GetNameOfPath(g.FilePath)
 	if e != nil {

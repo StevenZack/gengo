@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/StevenZack/tools/ioToolkit"
 
@@ -59,7 +58,7 @@ func compile(pkgPath string) error {
 	if e != nil {
 		return e
 	}
-
+	log("compiling ", pkgPath)
 	for _, filePath := range list {
 		if !strToolkit.EndsWith(filePath, ".go") {
 			continue
@@ -82,25 +81,23 @@ func compile(pkgPath string) error {
 			}
 		}
 
+		log("\tparsing file:", filePath)
 		structs, e := ParseFileGengoStructs(filePath)
 		if e != nil {
 			return errors.New(filePath + " parseFileGengoStructs failed:" + e.Error())
 		}
 
-		log("Found", len(structs), "structs", structs)
-
 		for _, obj := range structs {
 			outputFile, e := obj.GetGengoFileOutputPath()
-			log("output:", outputFile)
+			log("\t\t", obj.GetInfoStr())
 			if e != nil {
 				return e
 			}
 
 			e = os.Remove(outputFile)
 			if e != nil {
-				log("os.Remove file failed:", outputFile)
+				log("\t\tos.Remove file failed:", outputFile)
 			}
-			log("os.Remove succeed:", outputFile)
 
 			e = generateExecutor(obj)
 			if e != nil {
@@ -121,34 +118,4 @@ func log(args ...interface{}) {
 	if verbosely {
 		fmt.Println(args...)
 	}
-}
-
-func generateExecutor(obj GengoStruct) error {
-	path := fileToolkit.GetGOPATH() + "src/" + genExecutorPkgPath + "/main.go"
-	bakPath := path + ".bak"
-	if !fileToolkit.IsFileExists(bakPath) {
-		return errors.New("file " + bakPath + " doesn't exists")
-	}
-	str, e := fileToolkit.ReadFileAll(bakPath)
-	if e != nil {
-		return errors.New("readFile." + e.Error())
-	}
-	str = strings.Replace(str, "str := data_gengo.Gen(g, genGoTag, t)", "str := "+obj.PreCompilerPkgName+".Gen(g, genGoTag, t)", -1)
-	str = strings.Replace(str, `"github.com/StevenZack/gengo/example/data"`, `"`+obj.StructPkg+`"`, -1)
-	structPkgName, e := fileToolkit.GetPkgNameFromPkg(obj.StructPkg)
-	if e != nil {
-		return errors.New("GetPkgNameFromPkg." + e.Error())
-	}
-	str = strings.Replace(str, "s := data.Student{}", "s := "+structPkgName+"."+obj.Name+"{}", -1)
-	str = strings.Replace(str, `packageName := "data"`, `packageName := "`+structPkgName+`"`, -1)
-	str = strings.Replace(str, "github.com/StevenZack/gengo/example/data_gengo", obj.PreCompilerPkg, -1)
-
-	fo, e := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if e != nil {
-		return errors.New("os.OpenFile." + e.Error())
-	}
-	defer fo.Close()
-	fo.WriteString(str)
-
-	return ioToolkit.RunAttachedCmd("go", "install", genExecutorPkgPath)
 }

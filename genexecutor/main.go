@@ -38,6 +38,7 @@ func main() {
 		genGoTag = os.Args[2]
 	}
 	str := tostring_gengo.Gen(g, genGoTag, t)
+	g.WriteAllImports()
 	fo.WriteString(str)
 
 	fo.Close()

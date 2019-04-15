@@ -9,8 +9,6 @@ import (
 
 func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 
-	fmtAdded := false
-
 	str := `func (s *` + t.Name() + `) ToString () string {
 	return `
 
@@ -22,10 +20,7 @@ func Gen(g *gen.FileGenerator, gengoTag string, t reflect.Type) string {
 			str += "s." + field.Name + "+"
 		default:
 			str += "fmt.Sprint(s." + field.Name + ")+"
-			if !fmtAdded {
-				g.AddImport("fmt")
-				fmtAdded = true
-			}
+			g.AddImport("fmt")
 		}
 	}
 
