@@ -9,8 +9,8 @@ import (
 
 	"github.com/StevenZack/gengo/gen"
 
-	"me/data"
-	"github.com/StevenZack/gengo/example/precompiler/json_gengo"
+	"github.com/StevenZack/gengo/example/data"
+	"github.com/StevenZack/gengo/example/precompiler/tostring_gengo"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		return
 	}
 
-	s := data.User{}
+	s := data.Student{}
 	t := reflect.TypeOf(s)
 	g := &gen.FileGenerator{}
 	packageName := "data"
@@ -37,7 +37,7 @@ func main() {
 	if len(os.Args) > 2 {
 		genGoTag = os.Args[2]
 	}
-	str := json_gengo.Gen(g, genGoTag, t)
+	str := tostring_gengo.Gen(g, genGoTag, t)
 	g.WriteAllImports()
 	fo.WriteString(str)
 

@@ -2,7 +2,9 @@ package gen
 
 import (
 	"encoding/json"
+	"os"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/StevenZack/tools/fileToolkit"
@@ -12,10 +14,11 @@ import (
 // GengoStruct infers structs in target .go file
 type GengoStruct struct {
 	PreCompilers []PreCompiler
+	GengoTags    []string
+	OutputPkgs   []string
 
 	StructPkg string
 	FilePath  string
-	GengoTags  []string
 	Name      string
 }
 
@@ -48,5 +51,27 @@ func (g *GengoStruct) GetGengoFileOutputPath(precompilerIndex int) (string, erro
 	if e != nil {
 		return "", e
 	}
-	return strToolkit.Getrpath(dir) + strings.ToLower(g.Name) + "_" + g.PreCompilers[precompilerIndex].PkgName + ".go", nil
+	filename := strings.ToLower(g.Name) + "_" + g.PreCompilers[precompilerIndex].PkgName + ".go"
+	if len(g.OutputPkgs) > precompilerIndex {
+		output := genOutputPath(g.OutputPkgs[precompilerIndex], dir)
+		log("\tgetOutputPath(), out:", output)
+		return output, nil
+	}
+	return strToolkit.Getrpath(dir) + filename, nil
+}
+
+func genOutputPath(pkg, dir string) string {
+	log("\tgetOutputPath() :", pkg, dir)
+	sep := string(os.PathSeparator)
+	if strings.Contains(pkg, sep) {
+		if strings.HasPrefix(pkg, "."+sep) || strings.HasPrefix(pkg, ".."+sep) { // relative path
+			return strToolkit.Getrpath(dir) + pkg
+		} else if strings.HasPrefix(pkg, sep) || runtime.GOOS == "windows" && strings.Contains(pkg, ":"+sep) { // absolute path
+			return pkg
+		}
+		// go path
+		return fileToolkit.GetGOPATH() + "src/" + pkg
+	}
+	// cur dir
+	return strToolkit.Getrpath(dir) + pkg
 }

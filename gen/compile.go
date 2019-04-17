@@ -56,11 +56,9 @@ func compile(pkgPath string) error {
 				if e != nil {
 					return e
 				}
-
-				e = os.Remove(outputFile)
-				if e != nil {
-					log("\t\tos.Remove file failed:", outputFile)
-				}
+				
+				fileToolkit.MkdirsOfFilePath(outputFile)
+				os.Remove(outputFile)
 
 				e = generateExecutor(obj, preIndex)
 				if e != nil {
