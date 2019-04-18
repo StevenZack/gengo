@@ -1,8 +1,7 @@
 package data
 
-// Student gengo github.com/StevenZack/gengo/precompiler/gentag tag ./student.go
 type Student struct {
-	UserID   string
-	Age      int
-	UserName string
+	UserID   string `json:"user_id" db:"user_id"`
+	Age      int    `json:"age" db:"age"`
+	UserName string `json:"user_name" db:"user_name"`
 }

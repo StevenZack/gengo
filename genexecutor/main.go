@@ -9,8 +9,8 @@ import (
 
 	"github.com/StevenZack/gengo/gen"
 
-	"github.com/StevenZack/gengo/example/data"
-	"github.com/StevenZack/gengo/precompiler/gentag"
+	"hello"
+	"github.com/StevenZack/gengo/precompiler/tostring"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 		return
 	}
 
-	s := data.Student{}
+	s := hello.Hello{}
 	t := reflect.TypeOf(s)
 	g := &gen.FileGenerator{}
-	packageName := "data"
+	packageName := "hello"
 
 	fo, e := os.OpenFile(os.Args[1], os.O_TRUNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if e != nil {
@@ -37,7 +37,7 @@ func main() {
 	if len(os.Args) > 2 {
 		genGoTag = os.Args[2]
 	}
-	str := gentag.Gen(g, genGoTag, t)
+	str := tostring.Gen(g, genGoTag, t)
 	g.WriteAllImports()
 	fo.WriteString(str)
 
