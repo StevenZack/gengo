@@ -5,7 +5,7 @@ A precompiler tool for Go (Generate Go code automatically)
 
 ## Requirement
 
-1.[Go](https://golang.org)
+1. [Go](https://golang.org)
 
 ## Install GenGo
 
