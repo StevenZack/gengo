@@ -28,7 +28,7 @@ func ParseFileGengoStructs(path string) ([]GengoStruct, error) {
 	if e != nil {
 		return nil, e
 	}
-	structPkg, e := fileToolkit.GetPkgFromDir(dir)
+	structPkg, e := fileToolkit.GetGoPkgFromDirPath(dir)
 	if e != nil {
 		return nil, e
 	}
@@ -42,7 +42,7 @@ FileLoop:
 		if !strings.Contains(line, "gengo ") {
 			continue
 		}
-		precompilers, gengoTags, outputPkgs, e := readGengoFromLine(line)
+		precompilers, gengoTags, outputPkgs, e := readGengoFromLine(dir, line)
 		if e != nil {
 			return nil, e
 		}
@@ -92,7 +92,7 @@ FileLoop:
 	return structs, nil
 }
 
-func readGengoFromLine(l string) ([]PreCompiler, []string, []string, error) {
+func readGengoFromLine(curDir, l string) ([]PreCompiler, []string, []string, error) {
 	formatErr := errors.New("bad gengo format")
 	if !strToolkit.StartsWith(l, "//") {
 		return nil, nil, nil, formatErr
@@ -109,7 +109,13 @@ func readGengoFromLine(l string) ([]PreCompiler, []string, []string, error) {
 	}
 	var precompilers []PreCompiler
 	var gengoTags, outputPkgs []string
+	var e error
 	for _, v := range strings.Split(strs[0], ",") {
+		v = fileToolkit.GetPathOfGoPkg(curDir, v)
+		v, e = fileToolkit.GetGoPkgFromDirPath(v)
+		if e != nil {
+			return nil, nil, nil, errors.New("pkg:" + v + " is not a Go Package")
+		}
 		pkgName, e := fileToolkit.GetPkgNameFromPkg(v)
 		if e != nil {
 			return nil, nil, nil, errors.New("pkg:" + v + " is not a Go Package")

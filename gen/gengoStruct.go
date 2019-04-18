@@ -20,6 +20,7 @@ type GengoStruct struct {
 	StructPkg string
 	FilePath  string
 	Name      string
+	Fields    []Field
 }
 
 // PreCompiler infers a preCompiler
