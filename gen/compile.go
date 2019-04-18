@@ -3,7 +3,7 @@ package gen
 import (
 	"errors"
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/StevenZack/tools/fileToolkit"
 	"github.com/StevenZack/tools/ioToolkit"
@@ -22,10 +22,10 @@ func compile(pkgPath string) error {
 	}
 	log("compiling ", pkgPath)
 	for _, filePath := range list {
-		if !strToolkit.EndsWith(filePath, ".go") {
+		if !strings.HasSuffix(filePath, ".go") {
 			continue
 		}
-		if strToolkit.EndsWith(filePath, "_gengo.go") {
+		if strings.HasSuffix(filePath, "_gengo.go") {
 			continue
 		}
 
@@ -56,9 +56,9 @@ func compile(pkgPath string) error {
 				if e != nil {
 					return e
 				}
-				
+
 				fileToolkit.MkdirsOfFilePath(outputFile)
-				os.Remove(outputFile)
+				// os.Remove(outputFile)
 
 				e = generateExecutor(obj, preIndex)
 				if e != nil {

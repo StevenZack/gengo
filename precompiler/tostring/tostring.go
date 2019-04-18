@@ -1,4 +1,4 @@
-package tostring_gengo
+package tostring
 
 import (
 	"reflect"

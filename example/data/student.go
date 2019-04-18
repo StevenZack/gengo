@@ -1,13 +1,8 @@
 package data
 
-import (
-	"github.com/StevenZack/gengo/example/base"
-)
-
-// Student stores a student . gengo ../precompiler/tostring_gengo gengo_tag ./model/model.go
+// gengo ../../precompiler/gentag tag ./student.go
 type Student struct {
-	base.Base
-	Name   string `json:"name"`
-	Age    int
-	School string
+	UserName string
+	Age      int
+	UserID   string
 }

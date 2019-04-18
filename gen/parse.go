@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/StevenZack/tools/fileToolkit"
-	"github.com/StevenZack/tools/strToolkit"
 )
 
 // ParseFileGengoStructs ParseFileGengoStructs
@@ -94,7 +93,7 @@ FileLoop:
 
 func readGengoFromLine(curDir, l string) ([]PreCompiler, []string, []string, error) {
 	formatErr := errors.New("bad gengo format")
-	if !strToolkit.StartsWith(l, "//") {
+	if !strings.HasPrefix(l, "//") {
 		return nil, nil, nil, formatErr
 	}
 
@@ -141,7 +140,7 @@ func readStructNameFromLine(l string) (string, error) {
 	strs := strings.Split(l, " ")
 	structIndex := -1
 	for index, s := range strs {
-		if strToolkit.StartsWith(s, "struct") {
+		if strings.HasPrefix(s, "struct") {
 			structIndex = index
 			break
 		}

@@ -1,4 +1,4 @@
-package json_gengo
+package json
 
 import (
 	"reflect"
