@@ -9,8 +9,8 @@ import (
 
 	"github.com/StevenZack/gengo/gen"
 
-	"hello"
-	"github.com/StevenZack/gengo/precompiler/tostring"
+	"xiao/hera/script/init/datastorehouse/roster/verify/rosterverify"
+	"github.com/StevenZack/gengo/precompiler/gentag"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 		return
 	}
 
-	s := hello.Hello{}
+	s := rosterverify.ClassroomId{}
 	t := reflect.TypeOf(s)
 	g := &gen.FileGenerator{}
-	packageName := "hello"
+	packageName := "rosterverify"
 
 	fo, e := os.OpenFile(os.Args[1], os.O_TRUNC|os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if e != nil {
@@ -37,7 +37,7 @@ func main() {
 	if len(os.Args) > 2 {
 		genGoTag = os.Args[2]
 	}
-	str := tostring.Gen(g, genGoTag, t)
+	str := gentag.Gen(g, genGoTag, t)
 	g.WriteAllImports()
 	fo.WriteString(str)
 
